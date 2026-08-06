@@ -52,3 +52,21 @@ df_joined = df_joined.withColumn(
     ).otherwise(0)
 )
 print(f"\nHow many total high outliers: {df_joined.filter(col("is_high_outlier") == 1).count()}")
+
+#adding wind direction binning
+sector_size = 360 / 16
+
+df_joined = df_joined.withColumn(
+    "Nearest Bin",
+    (F.floor((col("wind_direction_100m") + sector_size / 2) / sector_size) % 16).cast("int")
+)
+directions = [
+    "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+]
+
+#putting wind direction as input
+df_joined = df_joined.withColumn(
+    "Which Direction",
+    F.element_at(F.array(*[F.lit(d) for d in directions]), (col("Nearest Bin") + F.lit(1)).cast("int"))
+)
