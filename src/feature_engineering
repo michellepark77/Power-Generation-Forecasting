@@ -35,3 +35,20 @@ summary = df_joined.agg(
 summary_row = summary.collect()[0]
 power_lost_df = summary_row["Total power with curtailment"] - summary_row["Total power without curtailment"]
 display(f"Total power lost: {power_lost_df: ,.2f} MW")
+
+#wind speed outlier logic
+Q1 = ws_seasonal["Wind_Speed_Average_Meter_Sec_Reading_10_Minute"].quantile(0.25)
+Q3 = ws_seasonal["Wind_Speed_Average_Meter_Sec_Reading_10_Minute"].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - IQR * 1.5
+upper_bound = Q3 + IQR * 1.5
+ws_outliers = ws_seasonal[(ws_seasonal["Wind_Speed_Average_Meter_Sec_Reading_10_Minute"] < lower_bound) | (ws_seasonal["Wind_Speed_Average_Meter_Sec_Reading_10_Minute"] > upper_bound)]
+
+#create flags for outliers
+df_joined = df_joined.withColumn(
+    "is_high_outlier",
+    when(
+        (col("Wind_Speed_Average_Meter_Sec_Reading_10_Minute") > upper_bound), 1
+    ).otherwise(0)
+)
+print(f"\nHow many total high outliers: {df_joined.filter(col("is_high_outlier") == 1).count()}")
