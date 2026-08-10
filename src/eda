@@ -28,3 +28,14 @@ plt.ylabel("Wind Speed (m/s)")
 plt.title("Wind Speeds for the Week of Lowest Wind Speed")
 plt.tight_layout()
 plt.show()
+
+#look at wind direction for wind speed extremes
+# Wind direction spread for December 23-29, 2025 (max wind speed week)
+wd_dec = df_joined.filter(col("site_prevailing_time").between("2025-12-23", "2025-12-29")).groupBy("Which Direction").agg(count("*").alias("n")).toPandas()
+wd_dec["Which Direction"] = pd.Categorical(wd_dec["Which Direction"], categories=directions, ordered=True)
+wd_dec = wd_dec.sort_values("Which Direction")
+
+# Wind direction spread for August 16-22, 2024 (min wind speed week)
+wd_aug = df_joined.filter(col("site_prevailing_time").between("2024-08-16", "2024-08-22")).groupBy("Which Direction").agg(count("*").alias("n")).toPandas()
+wd_aug["Which Direction"] = pd.Categorical(wd_aug["Which Direction"], categories=directions, ordered=True)
+wd_aug = wd_aug.sort_values("Which Direction")
