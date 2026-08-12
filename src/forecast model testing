@@ -1,0 +1,58 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def evaluate_forecast(y_true, y_pred):
+    rmse = np.sqrt(np.mean((y_pred - y_true) ** 2))
+    mae = np.mean(np.abs(y_pred - y_true))
+
+    return {
+        "rmse": rmse,
+        "mae": mae
+    }
+
+
+def create_prediction_table(timestamps, forecast_values, actual_df=None):
+    table_df = pd.DataFrame({
+        "timestamp": timestamps,
+        "predicted_mw": forecast_values.round(3)
+    })
+
+    if actual_df is not None:
+        table_df = table_df.merge(
+            actual_df,
+            on="timestamp",
+            how="left"
+        )
+
+        table_df["error_mw"] = (
+            table_df["predicted_mw"] - table_df["actual_mw"]
+        ).round(3)
+
+    return table_df
+
+
+def plot_forecast(timestamps, forecast_values, actual_df=None):
+    plt.figure(figsize=(14, 5))
+    plt.plot(
+        timestamps,
+        forecast_values,
+        label="Predicted",
+        linewidth=1.5
+    )
+
+    if actual_df is not None:
+        plt.plot(
+            actual_df["timestamp"],
+            actual_df["actual_mw"],
+            label="Actual",
+            linewidth=1.5
+        )
+
+    plt.xlabel("Time")
+    plt.ylabel("Power Generation")
+    plt.title("Predicted vs Actual Power Generation")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
