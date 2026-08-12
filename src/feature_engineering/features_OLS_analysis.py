@@ -17,12 +17,6 @@ pdf = (
     .reset_index(drop=True)
 )
 
-# time features
-pdf["hour_sin"]  = np.sin(2 * np.pi * pdf["site_prevailing_time"].dt.hour  / 24)
-pdf["hour_cos"]  = np.cos(2 * np.pi * pdf["site_prevailing_time"].dt.hour  / 24)
-pdf["month_sin"] = np.sin(2 * np.pi * pdf["site_prevailing_time"].dt.month / 12)
-pdf["month_cos"] = np.cos(2 * np.pi * pdf["site_prevailing_time"].dt.month / 12)
-
 X = pdf[lag_feature_cols]
 y = pdf[target]
 
