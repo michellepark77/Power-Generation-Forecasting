@@ -12,7 +12,57 @@ def evaluate_forecast(y_true, y_pred):
         "mae": mae
     }
 
+#define different rmse evaluating horizons
+def evaluate_by_horizon(y_true, y_pred, horizons=[24, 48, 168]):
+    results = {}
 
+    for h in horizons:
+        h = min(h, len(y_true))
+        rmse = np.sqrt(
+            np.mean(
+                (y_pred[:h] - y_true[:h]) ** 2))
+        results[f"{h}h_rmse"] = rmse
+    return results
+
+#analyze residuals
+def analyze_residuals(y_true, y_pred):
+    residuals = y_true - y_pred
+    rmse = np.sqrt(np.mean(residuals ** 2))
+    mae = np.mean(np.abs(residuals))
+    bias = np.mean(residuals)
+    std = np.std(residuals)
+
+    return {
+        "rmse": rmse,
+        "mae": mae,
+        "bias": bias,
+        "std_residual": std
+        }
+#analyze residuals by lowest generation, mid generation, and highest generation
+
+def evaluate_by_generation_segment(y_true, y_pred):
+
+    residuals = y_true - y_pred
+
+    p75 = np.percentile(y_true, 75)
+
+    peaks = residuals[y_true >= p75]
+    mids = residuals[(y_true >= 1.0) & (y_true < p75)]
+    lows = residuals[y_true < 1.0]
+
+    results = {}
+
+    if len(peaks) > 0:
+        results["peak_rmse"] = np.sqrt(np.mean(peaks ** 2))
+
+    if len(mids) > 0:
+        results["mid_rmse"] = np.sqrt(np.mean(mids ** 2))
+
+    if len(lows) > 0:
+        results["low_rmse"] = np.sqrt(np.mean(lows ** 2))
+
+    return results
+``
 def create_prediction_table(timestamps, forecast_values, actual_df=None):
     table_df = pd.DataFrame({
         "timestamp": timestamps,
