@@ -197,4 +197,28 @@ def train_and_evaluate(lag_name, predictive_cols, eval_name, eval_start, eval_en
         "forecast": forecast_mw,
         "actual": actual
     }
+    
+#train model through all iterations of time frames and lag combinations, outputting error metrics
+available_cols = set(pdf.columns)
+valid_combos = {k: v for k, v in lag_combos.items() if all(c in available_cols for c in v)}
+skipped = set(lag_combos.keys()) - set(valid_combos.keys())
+if skipped:
+    print(f"Skipping combos with missing features: {skipped}")
 
+futures = []
+
+with ThreadPoolExecutor(max_workers=3) as executor:
+    for eval_name, (eval_start, eval_end) in eval_weeks.items():
+        for lag_name, predictive_cols in valid_combos.items():
+            future = executor.submit(
+                train_and_evaluate, lag_name, predictive_cols, eval_name, eval_start, eval_end
+            )
+            futures.append(future)
+
+results = [f.result() for f in futures]
+
+# Summary table
+print(f"{'Lag Combo':<18} {'Eval Week':<12} {'CV RMSE':>8} {'Eval RMSE':>10} {'Eval MSE':>9} {'Eval MAE':>9}")
+print("-" * 70)
+for r in results:
+    print(f"{r['lag_name']:<18} {r['eval_week']:<12} {r['cv_rmse']:>8.3f} {r['eval_rmse']:>10.3f} {r['eval_mse']:>9.3f} {r['eval_mae']:>9.3f}")
