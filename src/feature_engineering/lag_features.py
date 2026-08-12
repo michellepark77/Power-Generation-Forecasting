@@ -47,3 +47,10 @@ clean_lag = df_lag.na.fill(value=2.6988, subset=[
     "wind_speed_100m_lag_24",
     "wind_speed_100m_lag_168"
 ])
+
+#hourly and monthly windows for lag features
+# time features
+pdf["hour_sin"]  = np.sin(2 * np.pi * pdf["site_prevailing_time"].dt.hour  / 24)
+pdf["hour_cos"]  = np.cos(2 * np.pi * pdf["site_prevailing_time"].dt.hour  / 24)
+pdf["month_sin"] = np.sin(2 * np.pi * pdf["site_prevailing_time"].dt.month / 12)
+pdf["month_cos"] = np.cos(2 * np.pi * pdf["site_prevailing_time"].dt.month / 12)
