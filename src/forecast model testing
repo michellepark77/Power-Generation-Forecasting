@@ -63,6 +63,63 @@ def evaluate_by_generation_segment(y_true, y_pred):
 
     return results
 ``
+
+#finding largest errors for callibration
+def find_largest_errors(
+    timestamps,
+    y_true,
+    y_pred,
+    top_n=20
+):
+
+    error_df = pd.DataFrame({
+        "timestamp": timestamps,
+        "actual": y_true,
+        "predicted": y_pred
+    })
+
+    error_df["error"] = (
+        error_df["actual"]
+        - error_df["predicted"]
+    )
+
+    error_df["absolute_error"] = (
+        error_df["error"].abs()
+    )
+
+    return error_df.sort_values(
+        "absolute_error",
+        ascending=False
+    ).head(top_n)
+
+#plotting residuals
+def plot_residuals(y_true, y_pred):
+
+    residuals = y_true - y_pred
+
+    plt.figure(figsize=(10, 5))
+
+    plt.hist(
+        residuals,
+        bins=30,
+        alpha=0.7,
+        edgecolor="black"
+    )
+
+    plt.axvline(
+        np.mean(residuals),
+        color="red",
+        linestyle="--",
+        label="Bias"
+    )
+
+    plt.xlabel("Residual (Actual - Predicted)")
+    plt.ylabel("Frequency")
+    plt.title("Residual Distribution")
+
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 def create_prediction_table(timestamps, forecast_values, actual_df=None):
     table_df = pd.DataFrame({
         "timestamp": timestamps,
